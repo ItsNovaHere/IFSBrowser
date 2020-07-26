@@ -20,12 +20,8 @@ namespace IFSBrowser {
 		private static string[] _fileSelectFolders;
 		private static string _fileSelectSearch = "";
 
-		private static string _fileSelectPath =
-#if DEBUG
-			@"G:\Bemani + SEGA\IIDX26 - Rootage\contents\data\graphic";
-#else
-			System.Environment.CurrentDirectory;
-#endif
+		private static string _fileSelectPath = System.Environment.CurrentDirectory;
+
 
 		public static bool FileSelect(ref bool open, out string path, string filter = "") {
 			path = "";
