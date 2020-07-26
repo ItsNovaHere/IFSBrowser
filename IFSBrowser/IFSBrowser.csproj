@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="7.21.0" />
+    <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
+    <PackageReference Include="Veldrid.StartupUtilities" Version="4.8.0-g459c3cea99" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="gmframe26.ifs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="KBinXML, Version=1.0.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\KBinXML\KBinXML\bin\Debug\netstandard2.1\KBinXML.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="MaterialIcons-Regular.ttf" />
+  </ItemGroup>
+
+</Project>
