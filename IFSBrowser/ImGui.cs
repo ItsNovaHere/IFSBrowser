@@ -37,13 +37,13 @@ namespace IFSBrowser {
 				GetWindowWidth() - _style.WindowPadding.X * 2,
 				GetWindowHeight() - GetTextLineHeightWithSpacing() - _style.WindowPadding.Y * 6));
 
-			if (_fileSelectPath.Split(Path.DirectorySeparatorChar).Length > 1 && Selectable("..")) {
+			if (_fileSelectPath != "" && Selectable("..")) {
 				FileSelectChangeFolder(Path.Join(_fileSelectPath.Split(Path.DirectorySeparatorChar)[..^1]), filter);
 			}
 
 			foreach (var directory in _fileSelectFolders) {
 				if (Selectable(directory)) {
-					FileSelectChangeFolder($"{_fileSelectPath}{Path.DirectorySeparatorChar}{directory}", filter);
+					FileSelectChangeFolder(Path.Combine(_fileSelectPath, directory), filter);
 				}
 			}
 
@@ -64,14 +64,23 @@ namespace IFSBrowser {
 
 		private static void FileSelectChangeFolder(string newPath, string filter) {
 			_fileSelectPath = newPath;
+			
 			_fileSelectFiles = Directory.EnumerateFiles(_fileSelectPath + Path.DirectorySeparatorChar)
-				.Where(x => filter == "" || x.EndsWith(filter))
-				.Select(Path.GetFileName)
-				.ToArray();
+            					.Where(x => filter == "" || x.EndsWith(filter))
+            					.Select(Path.GetFileName)
+            					.ToArray();
+			
+			if (_fileSelectPath == "") {
+				_fileSelectFolders = Directory.GetLogicalDrives()
+					.Select(x => x.TrimEnd('\\'))
+					.ToArray();
+			} else {
+				_fileSelectFolders = Directory.EnumerateDirectories(_fileSelectPath + Path.DirectorySeparatorChar)
+                				.Select(Path.GetFileName)
+                				.ToArray();
+			}
 
-			_fileSelectFolders = Directory.EnumerateDirectories(_fileSelectPath + Path.DirectorySeparatorChar)
-				.Select(Path.GetFileName)
-				.ToArray();
+			
 		}
 	}
 
