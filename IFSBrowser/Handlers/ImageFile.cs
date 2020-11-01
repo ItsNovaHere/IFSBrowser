@@ -21,13 +21,9 @@ namespace IFSBrowser.Handlers {
 			var imageFile = new ImageFile(file) {
 				_format = format,
 				_compression = compression,
-				Data = file.Data // reminder that i hate reading python
+				Data = file.Data
 			};
-
-			var imgRect = image.Element("imgrect")?.Value
-				.Split(' ')
-				.Select(x => int.Parse(x) / 2)
-				.ToArray();
+			var imgRect = image.Element("imgrect")?.Value.Split(' ').Select(x => int.Parse(x) / 2).ToArray();
 
 			if (imgRect != null) {
 				imageFile.ImageSize = new Vector2(imgRect[1] - imgRect[0], imgRect[3] - imgRect[2]);
@@ -40,14 +36,13 @@ namespace IFSBrowser.Handlers {
 		protected override void Load() {
 			if (_compression != "avslz") return;
 
-			// LINQ .Reverse() is slow and messy but I'm too lazy to make it faster
+			// TODO: LINQ .Reverse() is slow and messy but I'm too lazy to make it faster
 			var rawSize = BitConverter.ToUInt32(Data[..4].Reverse().ToArray());
 			var size = BitConverter.ToUInt32(Data[4..8].Reverse().ToArray());
 
 			if (Data.Length != size + 8) return;
-
-			Data = Data[8..];
-			Data = LZ77.Decompress(Data);
+			
+			Data = LZ77.Decompress(Data[8..]);
 			if (Data.Length != rawSize) Program.LogWarning("Size does not match.");
 		}
 
@@ -76,14 +71,12 @@ namespace IFSBrowser.Handlers {
 			var factory = Window.GraphicsDevice.ResourceFactory;
 			var gd = Window.GraphicsDevice;
 			var imgui = Window.ImGuiRenderer;
-			TextureDescription textureDefinition;
-			byte[] data;
 
-			if (_format == "argb8888rev") {
-				GenerateArgb8888Rev(out textureDefinition, out data);
-			} else {
+			if (_format != "argb8888rev") {
 				return;
 			}
+
+			GenerateArgb8888Rev(out var textureDefinition, out var data);
 
 			_texture = factory.CreateTexture(ref textureDefinition);
 			gd.UpdateTexture(_texture, data, 0, 0, 0, (uint) ImageSize.X, (uint) ImageSize.Y, 1, 0, 0);
@@ -93,6 +86,8 @@ namespace IFSBrowser.Handlers {
 
 
 		public override void Dispose() {
+			if (_texture == null) return;
+			
 			Window.ImGuiRenderer.RemoveImGuiBinding(_texture);
 
 			_texture.Dispose();

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using ImGuiNET;
 using static ImGuiNET.ImGui;
 
@@ -9,11 +10,38 @@ namespace IFSBrowser {
 	public static class ImGui {
 		private static ImGuiStylePtr _style;
 
+		private const string Folder = "\uF07B ";
+		private const string File = "\uF15B ";
+		private const string FileArchive = "\uF1C6 ";
+		private const string Disk = "\uF0A0 ";
+		private static readonly ushort[] IconCharRange = {0xE005, 0xF8FF, 0}; 
+		
 		static ImGui() {
 			// init arrays
 			FileSelectChangeFolder(_fileSelectPath, "");
 
 			_style = GetStyle();
+			
+			// Font Icon Loading
+			unsafe {
+				var rangeHandle = GCHandle.Alloc(IconCharRange, GCHandleType.Pinned);
+				var nativeConfig = ImGuiNative.ImFontConfig_ImFontConfig();
+				nativeConfig->MergeMode = 1;
+				nativeConfig->GlyphMinAdvanceX = 13.0f;
+
+				try {
+					GetIO().Fonts.AddFontFromFileTTF("fa-regular-400.ttf", 16.0f, nativeConfig,
+						rangeHandle.AddrOfPinnedObject());
+				} finally {
+					if (rangeHandle.IsAllocated) {
+						rangeHandle.Free();
+					}
+				}
+				
+				ImGuiNative.ImFontConfig_destroy(nativeConfig);
+			}
+
+			Window.ImGuiRenderer.RecreateFontDeviceTexture();
 		}
 
 		private static string[] _fileSelectFiles;
@@ -30,7 +58,6 @@ namespace IFSBrowser {
 				ImGuiWindowFlags.Popup | ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar)) {
 				return false;
 			}
-
 			InputText("Search", ref _fileSelectSearch, 256);
 
 			BeginChildFrame(0x10000, new Vector2(
@@ -42,7 +69,9 @@ namespace IFSBrowser {
 			}
 
 			foreach (var directory in _fileSelectFolders) {
-				if (Selectable(directory)) {
+				// loose check for disks
+				var icon = directory.EndsWith(":") ? Disk : Folder;
+				if (Selectable(icon + directory)) {
 					FileSelectChangeFolder(Path.Combine(_fileSelectPath, directory), filter);
 				}
 			}
@@ -50,7 +79,9 @@ namespace IFSBrowser {
 			Separator();
 
 			foreach (var file in _fileSelectFiles) {
-				if (file.Contains(_fileSelectSearch) && Selectable(file)) {
+				// loose check for ifs icon
+				var icon = file.EndsWith(".ifs") ? FileArchive : File;
+				if (file.Contains(_fileSelectSearch) && Selectable(icon + file)) {
 					path = Path.Join(_fileSelectPath, file);
 				}
 			}
@@ -69,18 +100,18 @@ namespace IFSBrowser {
             					.Where(x => filter == "" || x.EndsWith(filter))
             					.Select(Path.GetFileName)
             					.ToArray();
-			
-			if (_fileSelectPath == "") {
-				_fileSelectFolders = Directory.GetLogicalDrives()
-					.Select(x => x.TrimEnd('\\'))
-					.ToArray();
-			} else {
-				_fileSelectFolders = Directory.EnumerateDirectories(_fileSelectPath + Path.DirectorySeparatorChar)
-                				.Select(Path.GetFileName)
-                				.ToArray();
-			}
 
+			if (_fileSelectPath != "") {
+				_fileSelectFolders = Directory.EnumerateDirectories(_fileSelectPath + Path.DirectorySeparatorChar)
+					.Select(Path.GetFileName)
+					.ToArray();
+				return;
+			}
 			
+			// Drive Select
+			_fileSelectFolders = Directory.GetLogicalDrives()
+				.Select(x => x.TrimEnd('\\'))
+				.ToArray();
 		}
 	}
 

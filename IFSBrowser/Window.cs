@@ -20,8 +20,7 @@ namespace IFSBrowser {
 
 		public Window() {
 			VeldridStartup.CreateWindowAndGraphicsDevice(WindowCreateInfo, out _window, out _graphicsDevice);
-			ImGuiRenderer = new ImGuiRenderer(_graphicsDevice, _graphicsDevice.SwapchainFramebuffer.OutputDescription,
-				_window.Width, _window.Height);
+			ImGuiRenderer = new ImGuiRenderer(_graphicsDevice, _graphicsDevice.SwapchainFramebuffer.OutputDescription, _window.Width, _window.Height);
 			_commandList = _graphicsDevice.ResourceFactory.CreateCommandList();
 			_framebuffer = _graphicsDevice.SwapchainFramebuffer;
 
@@ -37,8 +36,8 @@ namespace IFSBrowser {
 
 		private static void WindowOnResized() {
 			_graphicsDevice.MainSwapchain.Resize((uint) Width, (uint) Height);
-			ImGuiRenderer.WindowResized(Width, Height);
 			_framebuffer = _graphicsDevice.SwapchainFramebuffer;
+			ImGuiRenderer.WindowResized(Width, Height);
 		}
 
 		private void Update(float deltaSeconds) {

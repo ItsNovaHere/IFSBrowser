@@ -53,7 +53,7 @@ namespace IFSBrowser {
 
 			Begin("IFSBrowser",
 				ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar |
-				ImGuiWindowFlags.MenuBar);
+					ImGuiWindowFlags.MenuBar);
 
 			// Menu Bar
 			if (BeginMenuBar()) {
@@ -130,6 +130,13 @@ namespace IFSBrowser {
 			if (isFile && BeginPopupContextItem()) {
 				if (MenuItem("Close")) {
 					_ifsFiles.Remove(root);
+
+					if (_openedFile.Path == root.Path) {
+						_openedFile = null;
+					}
+					
+					root.Dispose();
+					GC.Collect();
 				}
 
 				EndPopup();
