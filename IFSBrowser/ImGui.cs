@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using ImGuiNET;
 using static ImGuiNET.ImGui;
+using static ImGuiNET.ImGuiWindowFlags;
 
 namespace IFSBrowser {
 
@@ -54,15 +55,24 @@ namespace IFSBrowser {
 		public static bool FileSelect(ref bool open, out string path, string filter = "") {
 			path = "";
 
-			if (!Begin("File Select", ref open,
-				ImGuiWindowFlags.Popup | ImGuiWindowFlags.Modal | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar)) {
+			if (!Begin("File Select", ref open, Popup | Modal | NoCollapse | NoScrollbar)) {
 				return false;
 			}
-			InputText("Search", ref _fileSelectSearch, 256);
 
+			var width = GetWindowWidth();
+			var height = GetWindowHeight();
+			
+			PushItemWidth(width / 2);
+			InputText("##label", ref _fileSelectPath, 512, ImGuiInputTextFlags.ReadOnly);
+			PopItemWidth();
+			SameLine();
+			PushItemWidth(-100);
+			InputText("Search", ref _fileSelectSearch, 256);
+			PopItemWidth();
+			
 			BeginChildFrame(0x10000, new Vector2(
-				GetWindowWidth() - _style.WindowPadding.X * 2,
-				GetWindowHeight() - GetTextLineHeightWithSpacing() - _style.WindowPadding.Y * 6));
+				width - _style.WindowPadding.X * 2,
+				height - GetTextLineHeightWithSpacing() - _style.WindowPadding.Y * 6));
 
 			if (_fileSelectPath != "" && Selectable("..")) {
 				FileSelectChangeFolder(Path.Join(_fileSelectPath.Split(Path.DirectorySeparatorChar)[..^1]), filter);
@@ -80,14 +90,18 @@ namespace IFSBrowser {
 
 			foreach (var file in _fileSelectFiles) {
 				// loose check for ifs icon
-				var icon = file.EndsWith(".ifs") ? FileArchive : File;
-				if (file.Contains(_fileSelectSearch) && Selectable(icon + file)) {
-					path = Path.Join(_fileSelectPath, file);
+				if (file.Contains(_fileSelectSearch)) {
+					if (file.EndsWith(".ifs")) {
+						if(Selectable(FileArchive + file)) {
+							path = Path.Join(_fileSelectPath, file);
+						}
+					} else {
+						Text(File + file);
+					}
 				}
 			}
 
 			EndChildFrame();
-
 			EndPopup();
 
 			return path != "";

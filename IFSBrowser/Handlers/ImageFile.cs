@@ -36,11 +36,14 @@ namespace IFSBrowser.Handlers {
 		protected override void Load() {
 			if (_compression != "avslz") return;
 
-			// TODO: LINQ .Reverse() is slow and messy but I'm too lazy to make it faster
-			var rawSize = BitConverter.ToUInt32(Data[..4].Reverse().ToArray());
-			var size = BitConverter.ToUInt32(Data[4..8].Reverse().ToArray());
+			var rawSizeData = Data[..4];
+			var sizeData = Data[4..8];
+			Array.Reverse(rawSizeData);
+			Array.Reverse(sizeData);
+			var rawSize = BitConverter.ToUInt32(rawSizeData);
+			var size = BitConverter.ToUInt32(sizeData);
 
-			if (Data.Length != size + 8) return;
+			if (Data.Length - 8 != size) return;
 			
 			Data = LZ77.Decompress(Data[8..]);
 			if (Data.Length != rawSize) Program.LogWarning("Size does not match.");

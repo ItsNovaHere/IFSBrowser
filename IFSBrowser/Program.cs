@@ -52,7 +52,7 @@ namespace IFSBrowser {
 			SetNextWindowPos(Vector2.Zero, ImGuiCond.Always);
 
 			Begin("IFSBrowser",
-				ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar |
+				ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoBringToFrontOnFocus | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar |
 					ImGuiWindowFlags.MenuBar);
 
 			// Menu Bar
